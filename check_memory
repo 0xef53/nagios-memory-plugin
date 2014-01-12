@@ -42,11 +42,11 @@ free_perc = (free_mem * 100) / meminfo['MemTotal']
 status_str = '%s%% free (%s MiB of %s MiB)' % (free_perc, free_mem/1024, meminfo['MemTotal']/1024)
 
 if free_perc <= args.crit_threshold:
-    print('CRITICAL: %s' % status_str)
+    print('MEMORY CRITICAL: %s' % status_str)
     sys.exit(2)
 if free_perc <= args.warn_threshold:
-    print('WARNING: %s' % status_str)
+    print('MEMORY WARNING: %s' % status_str)
     sys.exit(1)
 
-print('OK: %s' % status_str)
+print('MEMORY OK: %s' % status_str)
 sys.exit(0)
