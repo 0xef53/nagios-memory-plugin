@@ -1,0 +1,52 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import optparse
+import re
+import sys
+
+
+def get_meminfo():
+    re_parser = re.compile(r'^(?P<key>\S*):\s*(?P<value>\d*)\s*kB')
+    result = {}
+    for line in open('/proc/meminfo'):
+        match = re_parser.match(line)
+        if not match:
+            continue
+        key, value = match.groups(['key', 'value'])
+        result[key] = int(value)
+    return result
+
+
+parser = optparse.OptionParser(description='Check free memory on local machine', epilog='Example:  ./%(prog)s -w 20 -c 10')
+parser.add_option('-w', dest='warn_threshold', type=int, default=None, help='warning threshold in percentage')
+parser.add_option('-c', dest='crit_threshold', type=int, default=None, help='critical threshold in percentage (must be less than warning threshold)')
+args, _ = parser.parse_args()
+
+if not args.warn_threshold:
+    print('UNKNOWN: Missing warning threshold value')
+    parser.print_usage()
+    sys.exit(3)
+if not args.crit_threshold:
+    print('UNKNOWN: Missing critical threshold value')
+    parser.print_usage()
+    sys.exit(3)
+if args.warn_threshold <= args.crit_threshold:
+    print('UNKNOWN: Warning percentage cannot be equal to or less than critical percentage')
+    sys.exit(3)
+
+meminfo = get_meminfo()
+free_mem = meminfo['MemFree'] + meminfo['Cached'] + meminfo['Buffers'] + meminfo['SwapCached']
+free_perc = (free_mem * 100) / meminfo['MemTotal']
+
+status_str = '%s%% free (%s MiB of %s MiB)' % (free_perc, free_mem/1024, meminfo['MemTotal']/1024)
+
+if free_perc <= args.crit_threshold:
+    print('CRITICAL: %s' % status_str)
+    sys.exit(2)
+if free_perc <= args.warn_threshold:
+    print('WARNING: %s' % status_str)
+    sys.exit(1)
+
+print('OK: %s' % status_str)
+sys.exit(0)
