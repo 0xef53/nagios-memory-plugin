@@ -25,6 +25,8 @@ The script is written in Python and uses only `sys`, `re` and `optparse` modules
 
     Path to the script in your case may be different.
 
+    The thresholds are expressed as percents. This example would issue a warning if percent of free memory less than or equal to 20% and a critical if less than or equal to 10%.
+
 ### Supported OS
 
 GNU/Linux
